@@ -4,16 +4,13 @@ author: "Pedro Avila, Javier Benitez, Brandon Rivera"
 date: "2026-03-13"
 output: html_document
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
 ## Cargar datos
 ```{r}
-load("listings.RData")
+load("Listings.RData")
 
 head(listings, 5)
 
@@ -31,10 +28,7 @@ calendar_last_scraped number_of_reviews number_of_reviews_ltm number_of_reviews_
  calculated_host_listings_count_shared_rooms reviews_per_month     city         
 
 
-
-
 ### 1. Descripción de las variables
-
 ```{r}
 cual_nominales <- c(
     "listing_url",
@@ -139,4 +133,121 @@ head(datos_cual, 5)
 
 
 ### 2. Análisis exploratorio
+```{r message=FALSE, warning=FALSE}
+
+library(ggplot2)
+
+dim(listings)
+str(listings)
+summary(listings)
+
+colSums(is.na(listings))
+
+datos_cuant <- listings[, cuantitativas]
+datos_cual  <- listings[, cualitativas]
+
+
+listings$price <- as.numeric(gsub("[$,]", "", listings$price))
+listings$host_response_rate <- as.numeric(gsub("%", "", listings$host_response_rate))
+listings$host_acceptance_rate <- as.numeric(gsub("%", "", listings$host_acceptance_rate))
+
+summary(datos_cuant)
+
+ggplot(listings, aes(x = price)) +
+  geom_histogram(bins = 40)
+
+ggplot(listings, aes(x = review_scores_rating)) +
+  geom_histogram(bins = 30)
+
+ggplot(listings, aes(x = reviews_per_month)) +
+  geom_histogram(bins = 30)
+
+ggplot(listings, aes(y = price)) +
+  geom_boxplot()
+
+ggplot(listings, aes(y = reviews_per_month)) +
+  geom_boxplot()
+```
+Podemos ver que los datos los cuales principalmente podriamos hacer analisis 
+numerico llegan a tener sesgos cada uno por su lado
+```{r}
+shapiro.test(sample(na.omit(listings$price), 5000))
+shapiro.test(sample(na.omit(listings$review_scores_rating), 5000))
+shapiro.test(sample(na.omit(listings$reviews_per_month), 5000))
+```
+Haciendo la prueba de shapiro-wilks podemos darnos cuenta por que el p-value 
+llega a estar mas abajo que el alpha autoimpuesto de 0.5, podemos darnos cuenta
+que no es normal.
+
 ### 3. Análisis de relaciones con la variable respuesta
+
+
+```{r message=FALSE, warning=FALSE}
+library(corrplot)
+
+vars_interes <- c("price", "accommodates", "bedrooms", "beds", "bathrooms",
+                  "review_scores_rating", "reviews_per_month",
+                  "availability_365", "estimated_occupancy_l365d",
+                  "estimated_revenue_l365d", "number_of_reviews")
+
+cor_data <- listings[, vars_interes]
+cor_data <- cor_data[complete.cases(cor_data), ]
+
+cor_matrix <- cor(cor_data)
+
+corrplot(cor_matrix, method = "color", type = "upper",
+         addCoef.col = "black", tl.col = "black", tl.srt = 45,
+         mar = c(0,0,1,0))
+```
+
+Las variables `accommodates`, `bedrooms`, `beds` y `bathrooms` tienen la mayor correlación positiva con `price`. Las variables de reseñas y ocupación muestran correlaciones débiles.
+```{r}
+par(mfrow = c(2, 2))
+
+plot(listings$accommodates, listings$price,
+     main = "Price vs Accommodates",
+     xlab = "Capacidad", ylab = "Precio")
+abline(lm(price ~ accommodates, data = listings), col = "black", lwd = 2)
+
+plot(listings$bedrooms, listings$price,
+     main = "Price vs Bedrooms",
+     xlab = "Habitaciones", ylab = "Precio")
+abline(lm(price ~ bedrooms, data = listings), col = "black", lwd = 2)
+
+plot(listings$bathrooms, listings$price,
+     main = "Price vs Bathrooms",
+     xlab = "Baños", ylab = "Precio")
+abline(lm(price ~ bathrooms, data = listings), col = "black", lwd = 2)
+
+plot(listings$review_scores_rating, listings$price,
+     main = "Price vs Review Score",
+     xlab = "Calificación", ylab = "Precio")
+abline(lm(price ~ review_scores_rating, data = listings), col = "black", lwd = 2)
+
+par(mfrow = c(1, 1))
+```
+
+A mayor tamaño de la propiedad, mayor precio. La calificación no muestra relación clara con el precio.
+```{r}
+boxplot(price ~ room_type, data = listings,
+        main = "Precio por tipo de habitación",
+        xlab = "Tipo", ylab = "Precio",
+        ylim = c(0, 500))
+
+kruskal.test(price ~ room_type, data = listings)
+```
+
+Los alojamientos completos tienen precios más altos. Kruskal-Wallis confirma que las diferencias son significativas (p < 0.05).
+```{r}
+boxplot(price ~ city, data = listings,
+        main = "Precio por ciudad",
+        xlab = "Ciudad", ylab = "Precio",
+        ylim = c(0, 500),
+        las = 2)
+
+kruskal.test(price ~ city, data = listings)
+```
+
+El precio varía según la ciudad, siendo la ubicación un factor relevante (p < 0.05).
+
+Conclusión: Los mejores predictores del precio son `accommodates`, `bedrooms`, `bathrooms`, `room_type` y `city`.
