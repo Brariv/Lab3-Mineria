@@ -11,6 +11,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Lab 3 Avances
 
+```{r}
+load("Listings.RData")
+```
+
 ### 1. Descripción de las variables
 ### 2. Análisis exploratorio
+
+```{r}
+
+
+```
 ### 3. Análisis de relaciones con la variable respuesta
