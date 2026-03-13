@@ -1,0 +1,16 @@
+---
+title: "Lab3"
+author: "Pedro Avila, Javier Benitez, Brandon Rivera"
+date: "2026-03-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Lab 3 Avances
+
+### 1. Descripción de las variables
+### 2. Análisis exploratorio
+### 3. Análisis de relaciones con la variable respuesta
