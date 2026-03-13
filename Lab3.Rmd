@@ -9,13 +9,140 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+
+## Cargar datos
+```{r}
+load("listings.RData")
+
+head(listings, 5)
+
+summary(listings)
+```
+
 ## Lab 3 Avances
 
 ```{r}
 load("Listings.RData")
 ```
+=======
+
+calendar_last_scraped number_of_reviews number_of_reviews_ltm number_of_reviews_l30d
+ availability_eoy number_of_reviews_ly estimated_occupancy_l365d estimated_revenue_l365d first_review         
+ last_review        review_scores_rating review_scores_accuracy review_scores_cleanliness review_scores_checkin  
+ review_scores_communication review_scores_location review_scores_value   license          instant_bookable   
+ calculated_host_listings_count calculated_host_listings_count_entire_homes calculated_host_listings_count_private_rooms  
+ calculated_host_listings_count_shared_rooms reviews_per_month     city         
+
+
+
+>>>>>>> origin/main
 
 ### 1. Descripción de las variables
+
+```{r}
+cual_nominales <- c(
+    "listing_url",
+    "source",
+    "name",
+    "description",
+    "neighborhood_overview",
+    "picture_url",
+    "host_url",
+    "host_name",
+    "host_location",
+    "host_about",
+    "host_is_superhost",
+    "host_thumbnail_url",
+    "host_picture_url",
+    "host_neighbourhood",
+    "host_verifications",
+    "host_has_profile_pic",
+    "host_identity_verified",
+    "neighbourhood",
+    "neighbourhood_cleansed",
+    "neighbourhood_group_cleansed",
+    "bathrooms_text",
+    "amenities",
+    "has_availability",
+    "license",
+    "instant_bookable",
+    "city"
+)
+
+cual_ordinales <- c(
+    "last_scraped",
+    "host_response_time",
+    "host_since",
+    "property_type",
+    "room_type",
+    "calendar_last_scraped",
+    "first_review",
+    "last_review"
+)
+
+# Variables cuantitativas discretas que irian aqui pero no las voy a poner
+# id , scrape_id , host_id 
+cuant_discretas <- c(
+    "host_listings_count",
+    "host_total_listings_count",
+    "accommodates",
+    "bedrooms",
+    "beds",
+    "minimum_nights",
+    "minimum_nights_avg_ntm",
+    "maximum_nights",
+    "maximum_nights_avg_ntm",
+    "minimum_minimum_nights",
+    "maximum_minimum_nights",
+    "availability_30",
+    "availability_60",
+    "availability_90",
+    "availability_365",
+    "number_of_reviews",
+    "number_of_reviews_ltm",
+    "number_of_reviews_l30d",
+    "availability_eoy",
+    "number_of_reviews_ly",
+    "estimated_occupancy_l365d",
+    "reviews_per_month",
+    "minimum_maximum_nights",
+    "maximum_maximum_nights"
+)
+
+cuant_continuas <- c(
+    "host_response_rate",
+    "host_acceptance_rate",
+    "latitude",
+    "longitude",
+    "bathrooms",
+    "price",
+    "review_scores_rating",
+    "review_scores_accuracy",
+    "review_scores_cleanliness",
+    "review_scores_checkin",
+    "review_scores_communication",
+    "review_scores_location",
+    "review_scores_value",
+    "calculated_host_listings_count",
+    "calculated_host_listings_count_entire_homes",
+    "calculated_host_listings_count_private_rooms",
+    "calculated_host_listings_count_shared_rooms",
+    "estimated_revenue_l365d"
+)
+
+cuantitativas <- c(cuant_discretas, cuant_continuas)
+cuantitativas
+datos_cuant <- listings[, cuantitativas]
+head(datos_cuant, 5)
+
+cualitativas <- c(cual_nominales, cual_ordinales)
+cualitativas
+datos_cual <- listings[, cualitativas]
+head(datos_cual, 5)
+```
+
+
 ### 2. Análisis exploratorio
 
 ```{r}
