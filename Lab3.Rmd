@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Cargar datos
 ```{r}
-load("listings.RData")
+load("Listings.RData")
 
 head(listings, 5)
 
@@ -22,10 +22,6 @@ summary(listings)
 
 ## Lab 3 Avances
 
-```{r}
-load("Listings.RData")
-```
-=======
 
 calendar_last_scraped number_of_reviews number_of_reviews_ltm number_of_reviews_l30d
  availability_eoy number_of_reviews_ly estimated_occupancy_l365d estimated_revenue_l365d first_review         
@@ -34,9 +30,6 @@ calendar_last_scraped number_of_reviews number_of_reviews_ltm number_of_reviews_
  calculated_host_listings_count calculated_host_listings_count_entire_homes calculated_host_listings_count_private_rooms  
  calculated_host_listings_count_shared_rooms reviews_per_month     city         
 
-
-
->>>>>>> origin/main
 
 ### 1. Descripción de las variables
 
@@ -147,6 +140,50 @@ head(datos_cual, 5)
 
 ```{r}
 
+library(ggplot2)
+
+dim(listings)
+str(listings)
+summary(listings)
+
+colSums(is.na(listings))
+
+datos_cuant <- listings[, cuantitativas]
+datos_cual  <- listings[, cualitativas]
+
+
+listings$price <- as.numeric(gsub("[$,]", "", listings$price))
+listings$host_response_rate <- as.numeric(gsub("%", "", listings$host_response_rate))
+listings$host_acceptance_rate <- as.numeric(gsub("%", "", listings$host_acceptance_rate))
+
+summary(datos_cuant)
+
+ggplot(listings, aes(x = price)) +
+  geom_histogram(bins = 40)
+
+ggplot(listings, aes(x = review_scores_rating)) +
+  geom_histogram(bins = 30)
+
+ggplot(listings, aes(x = reviews_per_month)) +
+  geom_histogram(bins = 30)
+
+ggplot(listings, aes(y = price)) +
+  geom_boxplot()
+
+ggplot(listings, aes(y = reviews_per_month)) +
+  geom_boxplot()
 
 ```
+Podemos ver que los datos los cuales principalmente podriamos hacer analisis 
+numerico llegan a tener sesgos cada uno por su lado
+
+```{r}
+shapiro.test(sample(na.omit(listings$price), 5000))
+shapiro.test(sample(na.omit(listings$review_scores_rating), 5000))
+shapiro.test(sample(na.omit(listings$reviews_per_month), 5000))
+
+```
+Haciendo la prueba de shapiro-wilks podemos darnos cuenta por que el p-value 
+llega a estar mas abajo que el alpha autoimpuesto de 0.5, podemos darnos cuenta
+que no es normal.
 ### 3. Análisis de relaciones con la variable respuesta
