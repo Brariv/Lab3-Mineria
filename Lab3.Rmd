@@ -8,27 +8,24 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Cargar datos
+## 1. Descargue el conjunto de datos.
+
 ```{r}
 load("Listings.RData")
 
 head(listings, 5)
+```
 
+
+## 2. Haga un análisis exploratorio extenso de los datos. 
+Explique bien todos los hallazgos. No ponga solo gráficas y código. Debe llegar a conclusiones interesantes para poder predecir. Explique el
+preprocesamiento que necesitó hacer
+
+### 2.1. Descripción de las variables
+```{r datasummary}
 summary(listings)
 ```
 
-## Lab 3 Avances
-
-
-calendar_last_scraped number_of_reviews number_of_reviews_ltm number_of_reviews_l30d
- availability_eoy number_of_reviews_ly estimated_occupancy_l365d estimated_revenue_l365d first_review         
- last_review        review_scores_rating review_scores_accuracy review_scores_cleanliness review_scores_checkin  
- review_scores_communication review_scores_location review_scores_value   license          instant_bookable   
- calculated_host_listings_count calculated_host_listings_count_entire_homes calculated_host_listings_count_private_rooms  
- calculated_host_listings_count_shared_rooms reviews_per_month     city         
-
-
-### 1. Descripción de las variables
 ```{r}
 cual_nominales <- c(
     "listing_url",
@@ -70,8 +67,7 @@ cual_ordinales <- c(
     "last_review"
 )
 
-# Variables cuantitativas discretas que irian aqui pero no las voy a poner
-# id , scrape_id , host_id 
+
 cuant_discretas <- c(
     "host_listings_count",
     "host_total_listings_count",
@@ -130,9 +126,10 @@ cualitativas
 datos_cual <- listings[, cualitativas]
 head(datos_cual, 5)
 ```
+Variables cuantitativas discretas no decidimos clasificarlas id , scrape_id , host_id.
+Adicionalmente la variable calendar_updated se decidio no incluirla ya que toda su data es NA
 
-
-### 2. Análisis exploratorio
+### 2.2. Análisis exploratorio
 ```{r message=FALSE, warning=FALSE}
 
 library(ggplot2)
@@ -168,6 +165,7 @@ ggplot(listings, aes(y = price)) +
 ggplot(listings, aes(y = reviews_per_month)) +
   geom_boxplot()
 ```
+
 Podemos ver que los datos los cuales principalmente podriamos hacer analisis 
 numerico llegan a tener sesgos cada uno por su lado
 ```{r}
@@ -179,8 +177,7 @@ Haciendo la prueba de shapiro-wilks podemos darnos cuenta por que el p-value
 llega a estar mas abajo que el alpha autoimpuesto de 0.5, podemos darnos cuenta
 que no es normal.
 
-### 3. Análisis de relaciones con la variable respuesta
-
+### 2.3. Análisis de relaciones con la variable respuesta
 
 ```{r message=FALSE, warning=FALSE}
 library(corrplot)
@@ -251,3 +248,41 @@ kruskal.test(price ~ city, data = listings)
 El precio varía según la ciudad, siendo la ubicación un factor relevante (p < 0.05).
 
 Conclusión: Los mejores predictores del precio son `accommodates`, `bedrooms`, `bathrooms`, `room_type` y `city`.
+
+
+## 3. Incluya un análisis de grupos en el análisis exploratorio. (Javi)
+Explique las características de cada uno.
+
+## 4. Divida el set de datos preprocesados (Brandon)
+Dividalos en dos conjuntos: Entrenamiento y prueba. Describa el criterio que usó para crear los conjuntos: número de filas de cada uno, estratificado o no, balanceado o no, etc.
+
+## 5. Haga ingeniería de características (Javi)
+¿qué variables cree que puedan ser mejores predictores para el precio de las casas? Explique en que basó la selección o no de las variables.
+
+## 6. Todos los resultados deben ser reproducibles por lo que debe fijar que los conjuntos de entrenamiento y
+prueba sean los mismos siempre que se ejecute el código.
+
+## 7. Modelo univariado de regresión lineal (Javi)
+Seleccione una de las variables y haga un modelo univariado de regresión lineal para predecir el precio de
+las casas. Analice el modelo (resumen, residuos, resultados de la predicción). Muéstrelo gráficamente.
+
+## 8. Modelo de regresión lineal (Brandon)
+Haga un modelo de regresión lineal con todas las variables numéricas para predecir el precio de las casas.
+Analice el modelo (resumen, residuos, resultados de la predicción). Muestre el modelo gráficamente.
+
+## 9. Analice el modelo. (Pedro)
+Determine si hay multicolinealidad entre las variables, y cuáles son las que aportan al modelo. Haga un análisis de correlación de las características del modelo y especifique si el modelo se
+adapta bien a los datos. Explique si hay sobreajuste (overfitting) o no. En caso de existir sobreajuste, haga otro modelo que lo corrija.
+
+## 10. Si tiene multicolinealidad o sobreajuste, haga un modelo con las variables que sean mejores predictoras
+del precio de las casas. Determine la calidad del modelo realizando un análisis de los residuos. Muéstrelo
+gráficamente.
+
+## 11. Elabore un modelo en el que utilice al menos una de las técnicas de regularización (Javi)
+(Ridge, Lasso, ElasticNet) compare los resultados con los otros modelos.
+
+## 12. Utilice cada modelo con el conjunto de prueba (Brandon)
+Determine la eficiencia del algoritmo para predecir el precio de las casas. ¿Qué tan bien lo hizo? ¿Qué medidas usó para determinar la calidad de la predicción?
+
+## 13. Discuta sobre la efectividad de los modelos. (Pedro)
+¿Cuál lo hizo mejor? ¿Cuál es el mejor modelo para predecir el precio de las casas? Haga los gráficos que crea que le pueden ayudar en la discusión.
