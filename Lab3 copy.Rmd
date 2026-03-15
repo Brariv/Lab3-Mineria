@@ -273,32 +273,23 @@ train <- pricing_without_na[trainIndex, ]
 test <- pricing_without_na[-trainIndex, ]
 ```
 
-Tratamiento de outliers en 'price' (IQR) sin perder filas:
-En vez de eliminar registros (lo que puede dejar 0 casos para entrenar),
-recortamos (winsorizamos) el precio a los límites IQR calculados en TRAIN.
-[Esta seccion del codigo fue Generado por ChatGPT para ayudarnos a limpiar los outliers sin perder filas]
-[El resto del codigo es nuestro tomando en base el repositorio de erick]
-
 ```{r outliers-price-iqr}
-
+# Identificando valores atípicos en 'price' usando IQR
 Q1 <- quantile(train$price, 0.25, na.rm = TRUE)
 Q3 <- quantile(train$price, 0.75, na.rm = TRUE)
 IQR_value <- Q3 - Q1
 
-low  <- as.numeric(Q1 - 1.5 * IQR_value)
-high <- as.numeric(Q3 + 1.5 * IQR_value)
+bounds_price <- c(low = Q1 - 1.5 * IQR_value, high = Q3 + 1.5 * IQR_value)
 
-cat("IQR bounds price (train):", low, "to", high, "\n")
-cat("Rows before -> train:", nrow(train), ", test:", nrow(test), "\n")
+low  <- unname(bounds_price["low"]) 
+high <- unname(bounds_price["high"]) 
 
-# Clip/Winsorize
-train$price <- pmin(pmax(train$price, low), high)
-test$price  <- pmin(pmax(test$price,  low), high)
+cat("IQR bounds price:", low, "to", high, "\n")
 
-cat("Rows after  -> train:", nrow(train), ", test:", nrow(test), "\n")
-cat("NA counts -> price/train:", sum(is.na(train$price)), ", bedrooms/train:", sum(is.na(train$bedrooms)), "\n")
+train <- train[train$price >= low & train$price <= high, ]
+test  <- test[test$price  >= low & test$price  <= high, ]
 ```
-Entrenamos con el 70% de los datos y probamos con el 30% restante. La partición se hizo de manera estratificada para mantener la distribución del precio en ambos conjuntos. Luego, se aplicó un recorte (winsorización) de outliers en `price` con límites IQR calculados en entrenamiento, para reducir el impacto de valores extremos sin eliminar observaciones.
+Entrenamos con el 70% de los datos y probamos con el 30% restante. La partición se hizo de manera estratificada para mantener la distribución del precio en ambos conjuntos.
 
 ## 5. Haga ingeniería de características (Brandon)
 ¿qué variables cree que puedan ser mejores predictores para el precio de las casas? Explique en que basó la selección o no de las variables.
@@ -309,13 +300,11 @@ Nuestros supuestos son los siguientes:
 2. Los baños (bathrooms) son linealmente relacionados con el precio.
 3. La calificación de las reseñas (review_scores_rating) es linealmente relacionada con el precio.
 ```{r}
-train_bedrooms <- train[complete.cases(train[, c("price", "bedrooms")]), ]
-train_bathrooms <- train[complete.cases(train[, c("price", "bathrooms")]), ]
-train_reviews <- train[complete.cases(train[, c("price", "review_scores_rating")]), ]
+model_bedrooms <- lm(price ~ bedrooms, data = train)
 
-model_bedrooms <- lm(price ~ bedrooms, data = train_bedrooms)
-model_bathrooms <- lm(price ~ bathrooms, data = train_bathrooms)
-model_ReviewScore <- lm(price ~ review_scores_rating, data = train_reviews)
+model_bathrooms <- lm(price ~ bathrooms, data = train)
+
+model_ReviewScore <- lm(price ~ review_scores_rating, data = train)
 ```
 
 
