@@ -551,24 +551,25 @@ model_lasso <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda)
 pred_lasso <- predict(model_lasso, s = best_lambda, newx = x_test)
 pred_lasso <- as.numeric(pred_lasso) 
 
-valid_idx_lasso <- complete.cases(pred_lasso, actual_lasso)
-pred_lasso_valid <- pred_lasso[valid_idx_lasso]
-actual_lasso_valid <- actual_lasso[valid_idx_lasso]
+actual_lasso <- y_test
+
+r2_test <- function(actual, predicted) {
+  ss_res <- sum((actual - predicted)^2, na.rm = TRUE)
+  ss_tot <- sum((actual - mean(actual, na.rm = TRUE))^2, na.rm = TRUE)
+  1 - ss_res / ss_tot
+}
 
 results_lasso <- data.frame(
   Modelo = c("Regresión Lasso (Regularización)"),
   RMSE = c(
-    caret::RMSE(pred_lasso_valid, actual_lasso_valid)
+    caret::RMSE(pred_lasso, actual_lasso)
   ),
   R2 = c(
-    r2_test(actual_lasso_valid, pred_lasso_valid)
+    r2_test(actual_lasso, pred_lasso)
   )
 )
 
 results_lasso
-
-tabla_comparativa <- rbind(results_single, results_full, results_lasso)
-tabla_comparativa
 ```
 
 ¿Por que escogimos lasso? 
@@ -602,13 +603,6 @@ results_full <- data.frame(
 results_full
 ```
 ```{r}
-r2_test <- function(actual, predicted) {
-  ss_res <- sum((actual - predicted)^2, na.rm = TRUE)
-  ss_tot <- sum((actual - mean(actual, na.rm = TRUE))^2, na.rm = TRUE)
-  1 - ss_res / ss_tot
-}
-
-# Remover valores NA para una comparación justa en el modelo univariado
 valid_idx_single <- complete.cases(pred_full_single, actual_full_single)
 pred_single_valid <- pred_full_single[valid_idx_single]
 actual_single_valid <- actual_full_single[valid_idx_single]
@@ -623,8 +617,15 @@ results_single <- data.frame(
   )
 )
 
-# Mostrar los resultados
 results_single
 ```
+
+```{r}
+tabla_comparativa <- rbind(results_single, results_full, results_lasso)
+tabla_comparativa
+```
+
 ## 13. Discuta sobre la efectividad de los modelos. (Pedro)
 ¿Cuál lo hizo mejor? ¿Cuál es el mejor modelo para predecir el precio de las casas? Haga los gráficos que crea que le pueden ayudar en la discusión.
+
+
